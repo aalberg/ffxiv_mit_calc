@@ -1,0 +1,51 @@
+import args_utils
+
+from fflogsapi import FFLogsClient
+from fflogs_secrets import CLIENT_ID, CLIENT_SECRET
+
+args = args_utils.parse_args()
+REPORT_CODE = args.r if args.r else 'hAtczfwqBFp1HJWN'
+
+client = FFLogsClient(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+
+print(f"Fetching report: {REPORT_CODE}...")
+report = client.get_report(REPORT_CODE)
+
+print("Processing pulls...")
+for fight in report:
+  if args.n and fight.id not in args.n:
+    continue
+  if args.k and not fight.is_kill():
+    continue
+  # Skip very short pulls (less than 30 seconds)
+  if not fight or (fight.end_time() - fight.start_time()) < 30000:
+    continue
+
+  STATUS = "KILL" if fight.is_kill() else "WIPE"
+  print(f"\nPull {fight.id}: {fight.name()} ({STATUS})")
+
+  targetability = fight.events(
+      filters={"filterExpression": "type=\"targetabilityupdate\""})
+  if not targetability:
+    continue
+  ranges = []
+  start_times = {}
+  for e in targetability:
+    eid = e['sourceID']
+    timestamp = e['timestamp']
+    if e['targetable']:
+      start_times[eid] = timestamp
+    else:
+      s = start_times[eid] if eid in start_times else fight.start_time()
+      ranges.append((s, timestamp))
+
+  min_start = min(start_times.values())
+  if min_start != fight.start_time():
+    ranges.append((min_start, fight.end_time()))
+
+  print(f"https://www.fflogs.com/reports/{REPORT_CODE}?fight={fight.id}"
+        "&type=damage-done")
+  for r in ranges:
+    print(f"https://www.fflogs.com/reports/{REPORT_CODE}?fight={fight.id}"
+          f"&type=damage-done&start={r[0]}&end={r[1]}")
+  #break
