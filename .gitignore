@@ -1,6 +1,7 @@
 config.py
 fflogs_secrets.py
 data/*
+fflogsapi/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
