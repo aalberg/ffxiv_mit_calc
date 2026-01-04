@@ -12,4 +12,6 @@ def parse_args():
   parser.add_argument('-r', type=str)
   parser.add_argument('-n', type=parse_range)
   parser.add_argument('-k', type=bool)
+  parser.add_argument('-a', type=bool)
+  parser.add_argument('-d', type=bool)
   return parser.parse_args()

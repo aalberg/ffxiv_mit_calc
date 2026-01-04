@@ -6,12 +6,10 @@ from fflogsapi.util.gql_enums import GQLEnum
 from fflogsapi import FFLogsClient
 
 args = args_utils.parse_args()
-REPORT_CODE = args.r if args.r else 'hAtczfwqBFp1HJWN'
-
 client = FFLogsClient(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
-print(f"Fetching report: {REPORT_CODE}...")
-report = client.get_report(REPORT_CODE)
+print(f"Fetching report: {args.r}...")
+report = client.get_report(args.r)
 
 print("Processing pulls...")
 for fight in report:
@@ -40,9 +38,7 @@ for fight in report:
 
   # Build the pretty table
   STATUS = "KILL" if fight.is_kill() else "WIPE"
-  print(
-      f"\nPull {fight.id}: {fight.name()} ({STATUS})"
-  )
+  print(f"\nPull {fight.id}: {fight.name()} ({STATUS})")
   #print(f"{'Player':<15} | {'rDPS':<8} | {'aDPS':<8} | {'nDPS':<8}")
   #print("-" * 55)
 

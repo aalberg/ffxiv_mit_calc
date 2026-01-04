@@ -4,12 +4,10 @@ from fflogsapi import FFLogsClient
 from fflogs_secrets import CLIENT_ID, CLIENT_SECRET
 
 args = args_utils.parse_args()
-REPORT_CODE = args.r if args.r else 'hAtczfwqBFp1HJWN'
-
 client = FFLogsClient(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
-print(f"Fetching report: {REPORT_CODE}...")
-report = client.get_report(REPORT_CODE)
+print(f"Fetching report: {args.r}...")
+report = client.get_report(args.r)
 
 print("Processing pulls...")
 for fight in report:
@@ -43,9 +41,8 @@ for fight in report:
   if min_start != fight.start_time():
     ranges.append((min_start, fight.end_time()))
 
-  print(f"https://www.fflogs.com/reports/{REPORT_CODE}?fight={fight.id}"
+  print(f"https://www.fflogs.com/reports/{args.r}?fight={fight.id}"
         "&type=damage-done")
   for r in ranges:
-    print(f"https://www.fflogs.com/reports/{REPORT_CODE}?fight={fight.id}"
+    print(f"https://www.fflogs.com/reports/{args.r}?fight={fight.id}"
           f"&type=damage-done&start={r[0]}&end={r[1]}")
-  #break
