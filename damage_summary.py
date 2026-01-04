@@ -20,7 +20,14 @@ for fight in report:
   # Skip very short pulls (less than 30 seconds)
   if not fight or (fight.end_time() - fight.start_time()) < 30000:
     continue
-  duration = (fight.end_time() - fight.start_time()) / 1000.0
+
+  # The fight start is triggered when the first prepares event occurs prepull,
+  # but the 0:00 point is marked by the LB reset on combat start.
+  lb_events = fight.events(
+      filters={"filterExpression": "type=\"limitbreakupdate\""})
+  real_fight_start = lb_events[0]['timestamp']
+
+  duration = (fight.end_time() - real_fight_start) / 1000.0
 
   ### Start bad logic for filtering
   targetability = fight.events(
@@ -28,7 +35,7 @@ for fight in report:
   if not targetability:
     continue
   end_p1 = targetability[0]["timestamp"]
-  duration2 = (end_p1 - fight.start_time()) / 1000.0
+  duration2 = (end_p1 - real_fight_start) / 1000.0
 
   table = fight.table(filters={
       "dataType": GQLEnum("DamageDone"),
@@ -50,10 +57,13 @@ for fight in report:
     adps = entry.get('totalADPS', 0) / duration2
     rdps = entry.get('totalRDPS', 0) / duration2
     ndps = entry.get('totalNDPS', 0) / duration2
+    dps = (entry.get('totalRDPS', 0) + entry.get('totalRDPSTaken', 0) +
+           entry.get('totalRDPSGiven', 0)) / duration2
+    print(entry)
 
     # Filter out Limit Breaks or non-player entities if needed
     if entry.get('type') != "LimitBreak":
-      new_table.append([adps, [str(i) for i in [job, adps, rdps]]])
+      new_table.append([adps, [str(i) for i in [job, dps, adps, rdps, ndps]]])
       #print(";".join(str(i) for i in [name, adps, rdps]))
       #print(f"{name:<15} | {rdps:<8.1f} | {adps:<8.1f} | {ndps:<8.1f}")
   new_table = sorted(new_table, reverse=True)

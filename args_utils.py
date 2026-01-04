@@ -1,5 +1,8 @@
 import argparse
 
+def milli_to_pretty(ms):
+  return f"{ms // 60000}:{((ms % 60000) / 1000):06.3f}"
+
 def parse_range(astr):
   result = set()
   for part in astr.split(','):
@@ -14,4 +17,5 @@ def parse_args():
   parser.add_argument('-k', type=bool)
   parser.add_argument('-a', type=bool)
   parser.add_argument('-d', type=bool)
+  parser.add_argument('-c', type=bool)
   return parser.parse_args()

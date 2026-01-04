@@ -19,6 +19,12 @@ for fight in report:
   if not fight or (fight.end_time() - fight.start_time()) < 30000:
     continue
 
+  # The fight start is triggered when the first prepares event occurs prepull,
+  # but the 0:00 point is marked by the LB reset on combat start.
+  lb_events = fight.events(
+      filters={"filterExpression": "type=\"limitbreakupdate\""})
+  real_fight_start = lb_events[0]['timestamp']
+
   STATUS = "KILL" if fight.is_kill() else "WIPE"
   print(f"\nPull {fight.id}: {fight.name()} ({STATUS})")
 
@@ -34,12 +40,13 @@ for fight in report:
     if e['targetable']:
       start_times[eid] = timestamp
     else:
-      s = start_times[eid] if eid in start_times else fight.start_time()
+      s = start_times[eid] if eid in start_times else real_fight_start
       ranges.append((s, timestamp))
 
-  min_start = min(start_times.values())
-  if min_start != fight.start_time():
-    ranges.append((min_start, fight.end_time()))
+  if start_times:
+    min_start = min(start_times.values())
+    if min_start != real_fight_start:
+      ranges.append((min_start, fight.end_time()))
 
   print(f"https://www.fflogs.com/reports/{args.r}?fight={fight.id}"
         "&type=damage-done")

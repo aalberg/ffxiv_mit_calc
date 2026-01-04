@@ -1,6 +1,7 @@
+from collections import defaultdict
+
 import args_utils
 
-from collections import defaultdict
 from fflogs_secrets import CLIENT_ID, CLIENT_SECRET
 from fflogsapi.util.gql_enums import GQLEnum
 from fflogsapi import FFLogsClient
@@ -26,15 +27,10 @@ def aid_to_name(aid):
   return abilities[aid].name
 
 
-def milli_to_pretty(ms):
-  return f"{ms // 60000}:{((ms % 60000) / 1000):06.3f}"
-
-
 def print_event(event, damage_for_event, fight_start):
-  event_time = event['timestamp']
-  time_delta = event_time - fight_start
+  time_delta = event['timestamp'] - fight_start
   print(";".join([
-      milli_to_pretty(time_delta),
+      args_utils.milli_to_pretty(time_delta),
       aid_to_name(event['abilityGameID']),
       str(event['abilityGameID']),
       str(len(damage_for_event))
@@ -84,7 +80,7 @@ for fight in report:
         #damage_for_event = []
         print_event(current_event, [], real_fight_start)
       current_event = e
-    elif args.d and e['type'] == 'damage':
+    elif args.d and e['type'] == 'damage':  # This breaks under a lot of cases
       if event_key not in events_in_flight:
         #if aid_to_name(e['abilityGameID']) not in ["Combined DoTs", "Sustained Damage"]:
         if 'tick' not in e or not e['tick']:
