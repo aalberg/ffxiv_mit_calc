@@ -99,7 +99,7 @@ def print_event(e, fight_start):
 
 
 print("Processing pulls...")
-for fight in report:
+for fight in (report if args.n else [report.fight()]):
   if args.n and fight.id not in args.n:
     continue
   if args.k and not fight.is_kill():

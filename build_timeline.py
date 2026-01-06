@@ -7,7 +7,6 @@ from fflogsapi.util.gql_enums import GQLEnum
 from fflogsapi import FFLogsClient
 
 args = args_utils.parse_args()
-print(args)
 client = FFLogsClient(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
 
 print(f"Fetching report: {args.r}...")
@@ -37,7 +36,7 @@ def print_event(event, damage_for_event, fight_start):
   ] + [str(i) for i in damage_for_event]))
 
 
-for fight in report:
+for fight in (report if args.n else [report.fight()]):
   if args.n and fight.id not in args.n:
     continue
   if args.k and not fight.is_kill():
